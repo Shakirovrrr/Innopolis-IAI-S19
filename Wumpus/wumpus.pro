@@ -1,7 +1,14 @@
 :- ['Wumpus\\game_map.pro'].
 
-smell(X, Y) :-
-	place(wumpus, X-1, Y);
-	place(wumpus, X, Y-1);
-	place(wumpus, X, Y+1);
-	place(wumpus, X+1, Y).
+is_neighbour(What, X, Y) :-
+	place(What, WX, WY),
+	(X is WX-1, Y is WY;
+	X is WX, Y is WY-1;
+	X is WX, Y is WY+1;
+	X is WX+1, Y is WY).
+
+is_smell(X, Y) :-
+	is_neighbour(wumpus, X, Y).
+
+is_breeze(X, Y) :-
+	is_neighbour(pit, X, Y).
