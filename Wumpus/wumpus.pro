@@ -1,10 +1,14 @@
 :- ['Wumpus\\game_map.pro'].
 
-:- dynamic([agent_pos/1, prev_pos/1, agent_path/1]).
+:- dynamic([agent_path/1]).
 
 % --------------------- Helpers ---------------------
 
+agent_pos(Pos) :-
+	agent_path([Pos | _]).
 
+prev_pos(Pos) :-
+	agent_path([_, Pos | _]).
 
 is_neighbour(What, [X, Y]) :-
 	place(What, [WX, WY]),
@@ -39,11 +43,6 @@ possible_steps([Xfrom, Yfrom], [Xprev, Yprev], [Xto, Yto]) :-
 	not((Xto is Xprev, Yto is Yprev)),
 	Xto > 0, Xto =< 5, Yto > 0, Yto =< 5.
 
-shift_prev :-
-	agent_pos(Pos),
-	retractall(prev_pos(_)),
-	assert(prev_pos(Pos)).
-
 can_update(NewPos) :-
 	agent_pos(Pos),
 	prev_pos(Prev),
@@ -51,7 +50,7 @@ can_update(NewPos) :-
 
 update_pos(NewPos) :-
 	can_update(NewPos),
-	shift_prev,
-	retractall(agent_pos(_)),
-	assert(agent_pos(NewPos)).
-	
+	agent_path(Path),
+	append([NewPos], Path, NewPath),
+	retractall(agent_path(_)),
+	assert(agent_path(NewPath)).

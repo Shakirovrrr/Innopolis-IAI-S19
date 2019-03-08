@@ -4,5 +4,4 @@ place(gold, [4, 4]).
 place(pit, [1, 2]).
 
 % -- Agent position --
-agent_pos([1,1]).
-prev_pos([1,1]).
+agent_path([[1, 1], [1, 1]]).
