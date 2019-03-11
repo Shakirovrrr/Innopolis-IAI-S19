@@ -1,8 +1,20 @@
+% -------- Load map --------
 :- ['Wumpus\\game_map.pro'].
 
-:- dynamic([agent_path/1, useless/1]).
+agent_path([[1, 1], [1, 1]]).
+useless([]).
+used_arrow(false).
+
+:- dynamic([agent_path/1, useless/1, used_arrow/1]).
 
 % --------------------- Helpers ---------------------
+
+first_elem(List, E) :-
+	nth0(0, List, E).
+
+main :-
+	make_step(Solution),
+	format('~p', Solution).
 
 agent_pos(Pos) :-
 	agent_path([Pos | _]).
@@ -12,16 +24,16 @@ prev_pos(Pos) :-
 
 restart :-
 	retractall(agent_path(_)),
-	assert(agent_path([[1, 1], [1, 1]])).
+	assertz(agent_path([[1, 1], [1, 1]])).
 
 rollback :-
 	agent_path([Miss | Tail]),
 	retractall(agent_path(_)),
-	assert(agent_path(Tail)),
+	assertz(agent_path(Tail)),
 	useless(Places),
 	append([Miss], Places, NewPlaces),
 	retractall(useless(_)),
-	assert(useless(NewPlaces)).
+	assertz(useless(NewPlaces)).
 
 is_neighbour(What, [X, Y]) :-
 	place(What, [WX, WY]),
@@ -48,27 +60,52 @@ on_breeze :-
 	agent_pos(Pos),
 	is_breeze(Pos).
 
+is_wumpus(Pos) :-
+	place(wumpus, Pos).
+
+on_wumpus :-
+	agent_pos(Pos),
+	is_wumpus(Pos).
+
+on_pit :-
+	agent_pos(Pos),
+	place(pit, Pos).
+
+on_gold :-
+	agent_pos(Pos),
+	place(gold, Pos).
+
+cost([Xprev, Yprev], [Xto, Yto], Cost) :-
+	(is_wumpus([Xto, Yto]) -> Cost is 10;
+	(Xprev=:=Xto; Yprev=:=Yto) -> Cost is 1;
+	Cost is 2).
+
+pick_cheapest_aux([], Cheapest, [_, CurTo]) :-
+	Cheapest is CurTo.
+
+pick_cheapest_aux([[Cost, To] | Tail], Cheapest, [CurCost, CurTo]) :-
+	pick_cheapest_aux(Tail, Cheapest, [CurCost, CurTo]),
+	(Cost < CurCost -> CurTo is To).
+
+pick_cheapest([L | Ls], Cheapest) :-
+	pick_cheapest_aux(Ls, Cheapest, L).
+
 possible_steps([Xfrom, Yfrom], [Xprev, Yprev], [Xto, Yto], Cost) :-
-	(Xto is Xfrom-1, Yto is Yfrom);
+	((Xto is Xfrom-1, Yto is Yfrom);
 	(Xto is Xfrom, Yto is Yfrom-1);
 	(Xto is Xfrom, Yto is Yfrom+1);
-	(Xto is Xfrom+1, Yto is Yfrom);
+	(Xto is Xfrom+1, Yto is Yfrom)),
 	not((Xto is Xprev, Yto is Yprev)),
 	in_bounds([Xto, Yto]),
-	Cost is 2,
-	(Xprev=:=Xto; Yprev=:=Yto -> Cost is 1).
-
-death(Pos) :-
-	place(wumpus, Pos);
-	place(pit, Pos).
+	cost([Xprev, Yprev], [Xto, Yto], Cost).
 
 can_update(NewPos) :-
 	agent_pos(Pos),
 	prev_pos(Prev),
 	agent_path(Path),
 	\+member(NewPos, Path),
-	useless(Places),
-	\+member(NewPos, Places),
+	useless(Useless),
+	\+member(NewPos, Useless),
 	possible_steps(Pos, Prev, NewPos, _).
 
 update_pos(NewPos) :-
@@ -76,5 +113,16 @@ update_pos(NewPos) :-
 	agent_path(Path),
 	append([NewPos], Path, NewPath),
 	retractall(agent_path(_)),
-	assert(agent_path(NewPath)),
+	assertz(agent_path(NewPath)),
 	format('Moved to (~p, ~p).~n', NewPos).
+
+make_step(Complete) :-
+	agent_pos(CurPos),
+	prev_pos(PrevPos),
+	findall([Cost, To], possible_steps(CurPos, PrevPos, To, Cost), Bag),
+	pick_cheapest(Bag, Che),
+	([] is Che -> rollback; update_pos(Che)),
+	((on_wumpus -> retractall(used_arrow(_)), assertz(used_arrow(true))); true),
+	(on_pit -> rollback),
+	agent_path(Path),
+	(on_gold -> Complete is Path; make_step(Complete)).
