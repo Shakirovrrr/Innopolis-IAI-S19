@@ -14,7 +14,7 @@ first_elem(List, E) :-
 
 main :-
 	make_step(Solution),
-	format('~p', Solution).
+	print(Solution).
 
 agent_pos(Pos) :-
 	agent_path([Pos | _]).
@@ -125,4 +125,4 @@ make_step(Complete) :-
 	((on_wumpus -> retractall(used_arrow(_)), assertz(used_arrow(true))); true),
 	(on_pit -> rollback),
 	agent_path(Path),
-	(on_gold -> Complete is Path; make_step(Complete)).
+	(on_gold -> reverse(Path, Complete); make_step(Complete)).
