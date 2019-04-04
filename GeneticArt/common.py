@@ -1,6 +1,7 @@
 import numpy as np
+from numba import jit
 
-from drawing import Point, RectMono
+from drawing import *
 
 
 def blank_image() -> np.ndarray:
@@ -19,3 +20,10 @@ def random_rect() -> RectMono:
 	rect = RectMono(beg, beg + size, color)
 
 	return rect
+
+
+@jit(nopython=True)
+def image_diff(img1: np.ndarray, img2: np.ndarray) -> float:
+	diff = np.abs(img1 - img2)
+	fit = np.mean(diff) / 255 * 100
+	return 100 - fit

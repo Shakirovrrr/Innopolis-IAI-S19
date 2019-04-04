@@ -23,3 +23,26 @@ class RectMono:
 		beg = self.begin.x, self.begin.y
 		end = self.end.x, self.end.y
 		return rectangle(img, beg, end, self.color, -1)
+
+
+class Canvas:
+	from numpy import ndarray
+
+	def __init__(self):
+		from typing import List
+		self.rects: List[RectMono] = []
+
+	def add(self, rect: RectMono):
+		self.rects.append(rect)
+
+	def __iadd__(self, other: RectMono):
+		self.rects.append(other)
+		return self
+
+	def render(self) -> ndarray:
+		from common import blank_channel
+		canvas = blank_channel()
+		for rect in self.rects:
+			canvas = rect.draw(canvas)
+
+		return canvas
