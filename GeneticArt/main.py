@@ -2,13 +2,14 @@ import cv2
 
 from common import *
 
-N_RECTS = 32
-MIN_FIT = 90
+N_RECTS = 128
+MIN_FIT = 88
+DIFF_SCALE = 1
 
 
 def fitness(canvas: Canvas, ideal: np.ndarray) -> float:
 	img = canvas.render()
-	scale = 2
+	scale = DIFF_SCALE
 	return image_diff(image_lower(img, scale), image_lower(ideal, scale))
 
 
@@ -70,6 +71,30 @@ def genetic(src: np.ndarray) -> np.ndarray:
 	return gen[0].render()
 
 
+def compute_parallel(source: np.ndarray):
+	from threading import Thread
+	src_b, src_g, src_r = cv2.split(source)
+	res = [None, None, None]
+
+	def compute_channel(src: np.ndarray, ix: int):
+		res[ix] = genetic(src)
+
+	thread_blue = Thread(target=compute_channel, args=(src_b, 0))
+	thread_green = Thread(target=compute_channel, args=(src_g, 1))
+	thread_red = Thread(target=compute_channel, args=(src_r, 2))
+
+	thread_blue.start()
+	thread_green.start()
+	thread_red.start()
+
+	thread_blue.join()
+	thread_green.join()
+	thread_red.join()
+
+	res_all = cv2.merge((res[0], res[1], res[2]))
+	cv2.imwrite('result.png', res_all)
+
+
 def compute(source: np.ndarray):
 	src_b, src_g, src_r = cv2.split(source)
 
@@ -78,9 +103,8 @@ def compute(source: np.ndarray):
 	res_r = genetic(src_r)
 
 	res_all = cv2.merge((res_b, res_g, res_r))
-	cv2.imwrite('result.png', res_all)
 
 
 source = cv2.imread('source.png', cv2.IMREAD_COLOR)
 
-compute(source)
+compute_parallel(source)
