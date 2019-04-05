@@ -103,6 +103,7 @@ def compute(source: np.ndarray):
 	res_r = genetic(src_r)
 
 	res_all = cv2.merge((res_b, res_g, res_r))
+	cv2.imwrite('result.png', res_all)
 
 
 source = cv2.imread('source.png', cv2.IMREAD_COLOR)
