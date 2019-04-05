@@ -3,17 +3,19 @@ import cv2
 from common import *
 
 N_RECTS = 32
+MIN_FIT = 90
 
 
 def fitness(canvas: Canvas, ideal: np.ndarray) -> float:
 	img = canvas.render()
-	return image_diff(img, ideal)
+	scale = 2
+	return image_diff(image_lower(img, scale), image_lower(ideal, scale))
 
 
 def cross_over(mom: Canvas, dad: Canvas) -> (Canvas, Canvas):
-	from copy import copy
-	child1 = copy(mom)
-	child2 = copy(dad)
+	from copy import deepcopy
+	child1 = deepcopy(mom)
+	child2 = deepcopy(dad)
 
 	for i in range(np.random.randint(12)):
 		ix = np.random.randint(N_RECTS)
@@ -23,8 +25,8 @@ def cross_over(mom: Canvas, dad: Canvas) -> (Canvas, Canvas):
 
 
 def mutate(chromosome: Canvas) -> Canvas:
-	from copy import copy
-	mutant = copy(chromosome)
+	from copy import deepcopy
+	mutant = deepcopy(chromosome)
 	for i in range(np.random.randint(8)):
 		ix = np.random.randint(N_RECTS)
 		mutant.rects[ix] = random_rect()
@@ -32,35 +34,53 @@ def mutate(chromosome: Canvas) -> Canvas:
 	return mutant
 
 
-def genetic(source: np.ndarray):
-	src_b, src_g, src_r = cv2.split(source)
-
-	gen_b = [Canvas() for i in range(6)]
-	for i in range(len(gen_b)):
+def genetic(src: np.ndarray) -> np.ndarray:
+	gen = [Canvas() for i in range(8)]
+	for i in range(len(gen)):
 		for j in range(N_RECTS):
-			gen_b[i] += random_rect()
+			gen[i] += random_rect()
 
-	for it in range(1000):
-		gen_b.sort(key=lambda x: fitness(x, src_b), reverse=True)
+	fit = 0
+	it = 0
+	while fit < MIN_FIT:
+		gen.sort(key=lambda x: fitness(x, src), reverse=True)
+		gen.pop()
+		gen.pop()
+		# print(gen)
 
-		mom = gen_b[0]
-		dad = gen_b[1]
-		c1, c2 = cross_over(mom, dad)
+		mom = gen[0]
+		dad = gen[1]
+		child1, child2 = cross_over(mom, dad)
 
-		family = [mom, dad, c1, c2]
+		family = [mom, dad, child1, child2]
 		for i in range(len(family)):
 			family[i] = mutate(family[i])
 
-		family.sort(key=lambda x: fitness(x, src_b), reverse=True)
-		gen_b.append(family[0])
-		gen_b.append(family[1])
+		family.sort(key=lambda x: fitness(x, src), reverse=True)
+		gen.append(family[0])
+		gen.append(family[1])
 
-		print('Iteration {}, fitness={}'.format(it, fitness(gen_b[-2], src_b)))
+		fit = fitness(gen[-2], src)
+		print('Iteration {}, fitness={}'.format(it, fit))
+		it += 1
 
-		if it % 10 == 0:
-			cv2.imwrite('progress.png', gen_b[-2].render())
+		if it % 100 == 0:
+			cv2.imwrite('progress.png', gen[0].render())
+
+	return gen[0].render()
+
+
+def compute(source: np.ndarray):
+	src_b, src_g, src_r = cv2.split(source)
+
+	res_b = genetic(src_b)
+	res_g = genetic(src_g)
+	res_r = genetic(src_r)
+
+	res_all = cv2.merge((res_b, res_g, res_r))
+	cv2.imwrite('result.png', res_all)
 
 
 source = cv2.imread('source.png', cv2.IMREAD_COLOR)
 
-genetic(source)
+compute(source)

@@ -22,6 +22,15 @@ def random_rect() -> RectMono:
 	return rect
 
 
+def image_lower(img: np.ndarray, scale: int = 1) -> np.ndarray:
+	from cv2 import pyrDown
+	lower = img
+	for i in range(scale):
+		lower = pyrDown(lower)
+
+	return lower
+
+
 @jit(nopython=True)
 def image_diff(img1: np.ndarray, img2: np.ndarray) -> float:
 	diff = np.abs(img1 - img2)
