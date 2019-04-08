@@ -6,8 +6,10 @@ from parameters import *
 
 def fitness(canvas: Canvas, ideal: np.ndarray) -> float:
 	img = canvas.render()
-	scale = DIFF_SCALE
-	return image_diff(image_lower(img, scale), image_lower(ideal, scale))
+	if DIFF_SCALE <= 0:
+		return image_diff(img, ideal)
+
+	return image_diff(image_lower(img, DIFF_SCALE), image_lower(ideal, DIFF_SCALE))
 
 
 def cross_over(mom: Canvas, dad: Canvas) -> (Canvas, Canvas):

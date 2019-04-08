@@ -9,7 +9,7 @@ def blank_image(brightness: int) -> np.ndarray:
 
 
 def blank_channel(brightness: int) -> np.ndarray:
-	return np.ones((512, 512, 1), np.uint8) * brightness
+	return np.ones((512, 512), np.uint8) * brightness
 
 
 def random_rect() -> RectMono:
@@ -31,8 +31,8 @@ def image_lower(img: np.ndarray, scale: int = 1) -> np.ndarray:
 	return lower
 
 
-@jit(nopython=True)
+@jit(nopython=True, parallel=True)
 def image_diff(img1: np.ndarray, img2: np.ndarray) -> float:
 	diff = np.abs(img1 - img2)
-	fit = np.mean(diff) / 255 * 100
-	return 100 - fit
+	fit = np.sum(diff) / (diff.shape[0] * diff.shape[1] * 255)
+	return fit * 100
