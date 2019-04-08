@@ -3,7 +3,7 @@ import cv2
 from common import *
 
 N_RECTS = 128
-MIN_FIT = 88
+MIN_FIT = 80
 DIFF_SCALE = 1
 
 
@@ -18,7 +18,7 @@ def cross_over(mom: Canvas, dad: Canvas) -> (Canvas, Canvas):
 	child1 = deepcopy(mom)
 	child2 = deepcopy(dad)
 
-	for i in range(np.random.randint(12)):
+	for i in range(np.random.randint(N_RECTS // 8)):
 		ix = np.random.randint(N_RECTS)
 		child1.rects[ix], child2.rects[ix] = child2.rects[ix], child1.rects[ix]
 
@@ -28,7 +28,7 @@ def cross_over(mom: Canvas, dad: Canvas) -> (Canvas, Canvas):
 def mutate(chromosome: Canvas) -> Canvas:
 	from copy import deepcopy
 	mutant = deepcopy(chromosome)
-	for i in range(np.random.randint(8)):
+	for i in range(np.random.randint(N_RECTS // 16)):
 		ix = np.random.randint(N_RECTS)
 		mutant.rects[ix] = random_rect()
 
