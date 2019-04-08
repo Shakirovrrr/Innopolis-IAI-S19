@@ -25,7 +25,7 @@ def cross_over(mom: Canvas, dad: Canvas) -> (Canvas, Canvas):
 def mutate(chromosome: Canvas) -> Canvas:
 	from copy import deepcopy
 	mutant = deepcopy(chromosome)
-	for i in range(np.random.randint(N_RECTS // 16)):
+	for i in range(np.random.randint(N_RECTS // 4)):
 		ix = np.random.randint(N_RECTS)
 		mutant.rects[ix] = random_rect()
 
@@ -59,10 +59,10 @@ def genetic(src: np.ndarray) -> np.ndarray:
 		gen.append(family[1])
 
 		fit = fitness(gen[-2], src)
-		print('Iteration {}, fitness={}'.format(it, fit))
 		it += 1
 
 		if it % 100 == 0:
+			print('Iteration {}, fitness={}'.format(it, fit))
 			cv2.imwrite('progress.png', gen[0].render())
 
 	return gen[0].render()
