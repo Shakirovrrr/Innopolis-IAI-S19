@@ -33,6 +33,6 @@ def image_lower(img: np.ndarray, scale: int = 1) -> np.ndarray:
 
 @jit(nopython=True, parallel=True)
 def image_diff(img1: np.ndarray, img2: np.ndarray) -> float:
-	diff = np.abs(img1 - img2)
+	diff = np.abs(img1.astype(np.int16) - img2.astype(np.int16))
 	fit = np.sum(diff) / (diff.shape[0] * diff.shape[1] * 255)
 	return fit * 100

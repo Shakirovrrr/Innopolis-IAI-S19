@@ -9,7 +9,7 @@ def fitness(canvas: Canvas, ideal: np.ndarray) -> float:
 	if DIFF_SCALE <= 0:
 		return image_diff(img, ideal)
 
-	return image_diff(image_lower(img, DIFF_SCALE), image_lower(ideal, DIFF_SCALE))
+	return 100 - image_diff(image_lower(img, DIFF_SCALE), image_lower(ideal, DIFF_SCALE))
 
 
 def cross_over(mom: Canvas, dad: Canvas) -> (Canvas, Canvas):
@@ -109,4 +109,4 @@ source = cv2.imread('source.png', cv2.IMREAD_COLOR)
 
 CANVAS_BRIGHTNESS %= 255
 
-compute_parallel(source)
+compute(source)
