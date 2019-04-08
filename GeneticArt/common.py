@@ -4,12 +4,12 @@ from numba import jit
 from drawing import *
 
 
-def blank_image() -> np.ndarray:
-	return np.ones((512, 512, 3), np.uint8) * 255
+def blank_image(brightness: int) -> np.ndarray:
+	return np.ones((512, 512, 3), np.uint8) * brightness
 
 
-def blank_channel() -> np.ndarray:
-	return np.ones((512, 512, 1), np.uint8) * 255
+def blank_channel(brightness: int) -> np.ndarray:
+	return np.ones((512, 512, 1), np.uint8) * brightness
 
 
 def random_rect() -> RectMono:
