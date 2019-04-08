@@ -28,9 +28,10 @@ class RectMono:
 class Canvas:
 	from numpy import ndarray
 
-	def __init__(self):
+	def __init__(self, brightness: int = 255):
 		from typing import List
 		self.rects: List[RectMono] = []
+		self.brightness = brightness
 
 	def add(self, rect: RectMono):
 		self.rects.append(rect)
@@ -41,7 +42,7 @@ class Canvas:
 
 	def render(self) -> ndarray:
 		from common import blank_channel
-		canvas = blank_channel()
+		canvas = blank_channel(self.brightness)
 		for rect in self.rects:
 			canvas = rect.draw(canvas)
 

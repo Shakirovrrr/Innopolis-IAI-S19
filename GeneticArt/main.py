@@ -2,9 +2,10 @@ import cv2
 
 from common import *
 
-N_RECTS = 128
-MIN_FIT = 80
+N_RECTS = 64
+MIN_FIT = 75
 DIFF_SCALE = 1
+CANVAS_BRIGHTNESS = 0
 
 
 def fitness(canvas: Canvas, ideal: np.ndarray) -> float:
@@ -36,7 +37,7 @@ def mutate(chromosome: Canvas) -> Canvas:
 
 
 def genetic(src: np.ndarray) -> np.ndarray:
-	gen = [Canvas() for i in range(8)]
+	gen = [Canvas(brightness=CANVAS_BRIGHTNESS) for i in range(8)]
 	for i in range(len(gen)):
 		for j in range(N_RECTS):
 			gen[i] += random_rect()
@@ -107,5 +108,7 @@ def compute(source: np.ndarray):
 
 
 source = cv2.imread('source.png', cv2.IMREAD_COLOR)
+
+CANVAS_BRIGHTNESS %= 255
 
 compute_parallel(source)
