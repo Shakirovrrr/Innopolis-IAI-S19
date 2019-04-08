@@ -1,11 +1,7 @@
 import cv2
 
 from common import *
-
-N_RECTS = 64
-MIN_FIT = 75
-DIFF_SCALE = 1
-CANVAS_BRIGHTNESS = 0
+from parameters import *
 
 
 def fitness(canvas: Canvas, ideal: np.ndarray) -> float:
